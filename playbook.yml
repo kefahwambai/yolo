@@ -1,33 +1,63 @@
 ---
-- name: Clone from Github
+- name: Clone from Github and Setup Containers
   hosts: localhost
   become: yes
 
   tasks:
-  - name: Clone code
-    git: 
-    repo: "https://github.com/kefahwambai/yolo"
-    dest: "/Vagrant"
-
+    - name: Clone code
+      git:
+        repo: "https://github.com/kefahwambai/yolo"
+        dest: "/Vagrant"
 
 - name: Docker containers
   hosts: localhost
   become: yes
 
   vars_files:
-  - vars/client_vars.yml
-  - vars/backend_vars.yml
-  - vars/batabse_vars.yml
+    - vars/client_vars.yml
+    - vars/backend_vars.yml
+    - vars/database_vars.yml
 
-  task: 
-  - name: Set up client container
-   import_role:
-     name: client
+  tasks:
+    - name: Build client image
+      docker_image:
+        name: yolo_client
+        build:
+          context: /home/kefah/Documents/Devel0pment/yolo/client
 
-   - name: Set up backend container
-    import_role:
-      name: backend
+    - name: Set up client container
+      docker_container:
+        name: client
+        image: "yolo_client"
+        ports:
+          - '3002'
+        wait_for:
+          port: 3001
 
-   - name: Set up database container
-     import_role:
-      name: database 
+    - name: Build backend image
+      docker_image:
+        name: yolo_backend
+        build:
+          context: ./backend
+
+    - name: Set up backend container
+      docker_container:
+        name: backend
+        image: "yolo_backend"
+        ports:
+          - '3001'
+        environment:
+          MONGODB_URI: "monogdb://database:27017/ecommerce"
+        volumes:
+          - "/yolo"
+        wait_for:
+          port: 27017
+
+    - name: Set up database container
+      docker_container:
+        name: database
+        image: "mongo"
+        ports:
+          - "27017"
+        volumes:
+          - mongo-data:/data/db
