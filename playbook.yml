@@ -1,0 +1,33 @@
+---
+- name: Clone from Github
+  hosts: localhost
+  become: yes
+
+  tasks:
+  - name: Clone code
+    git: 
+    repo: "https://github.com/kefahwambai/yolo"
+    dest: "/Vagrant"
+
+
+- name: Docker containers
+  hosts: localhost
+  become: yes
+
+  vars_files:
+  - vars/client_vars.yml
+  - vars/backend_vars.yml
+  - vars/batabse_vars.yml
+
+  task: 
+  - name: Set up client container
+   import_role:
+     name: client
+
+   - name: Set up backend container
+    import_role:
+      name: backend
+
+   - name: Set up database container
+     import_role:
+      name: database 

@@ -1,0 +1,4 @@
+
+client_image: "yolo_client"
+client_host_port: 3002
+client_container_port: 3002

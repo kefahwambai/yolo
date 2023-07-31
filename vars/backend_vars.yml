@@ -1,0 +1,6 @@
+
+backend_image: "yolo_backend"
+backend_host_port: 3001
+backend_container_port: 3001
+monogdb_uri: "monogdb://databse:27017/ecommerce"
+backend_volume: "/yolo"
